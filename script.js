@@ -1,553 +1,377 @@
-// Função para simular dados (substituir pela API real)
+// Objeto para armazenar os dados da empresa atual
+let currentCompanyData = null;
+let empresasEncontradas = [];
+
+// Configuração da API
+const API_BASE_URL = 'https://brasilapi.com.br/api';
+
+// Função para preencher o input com CNPJ de exemplo
+function preencherCNPJ(cnpj) {
+    document.getElementById('cnpjInput').value = cnpj;
+    consultarCNPJ();
+}
+
+// Função para limpar a busca
+function limparBusca() {
+    document.getElementById('cnpjInput').value = '';
+    document.getElementById('companyInfo').innerHTML = `
+        <div style="grid-column: 1/-1; text-align: center; color: #666; padding: 40px;">
+            Digite um CNPJ ou use os filtros para buscar empresas
+        </div>
+    `;
+    currentCompanyData = null;
+    empresasEncontradas = [];
+    esconderTodosFiltros();
+}
+
+// Função para esconder todos os filtros
+function esconderTodosFiltros() {
+    document.getElementById('filtroCidade').style.display = 'none';
+    document.getElementById('filtroEstado').style.display = 'none';
+    document.getElementById('filtroAtividade').style.display = 'none';
+    document.getElementById('filtroNome').style.display = 'none';
+}
+
+// Funções para mostrar filtros específicos
+function buscarPorCidade() {
+    esconderTodosFiltros();
+    document.getElementById('filtroCidade').style.display = 'flex';
+}
+
+function buscarPorEstado() {
+    esconderTodosFiltros();
+    document.getElementById('filtroEstado').style.display = 'flex';
+}
+
+function buscarPorAtividade() {
+    esconderTodosFiltros();
+    document.getElementById('filtroAtividade').style.display = 'flex';
+}
+
+function buscarPorNome() {
+    esconderTodosFiltros();
+    document.getElementById('filtroNome').style.display = 'flex';
+}
+
+// Função para aplicar filtro por cidade
+async function aplicarFiltroCidade() {
+    const cidade = document.getElementById('cidadeInput').value;
+    const estado = document.getElementById('estadoSelect').value;
+    
+    if (!cidade || !estado) {
+        alert('Por favor, preencha a cidade e selecione o estado');
+        return;
+    }
+    
+    mostrarLoading('Buscando empresas na cidade...');
+    
+    try {
+        // Simulação de busca por cidade (API real não tem esse endpoint específico)
+        // Na prática, você precisaria de uma API especializada para isso
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        // Dados simulados para demonstração
+        const empresas = gerarEmpresasPorCidade(cidade, estado);
+        empresasEncontradas = empresas;
+        exibirListaEmpresas(empresas, `Empresas encontradas em ${cidade}/${estado}`);
+        
+    } catch (error) {
+        mostrarErro('Erro ao buscar empresas por cidade');
+    }
+}
+
+// Função para aplicar filtro por estado
+async function aplicarFiltroEstado() {
+    const estado = document.getElementById('estadoFiltroSelect').value;
+    
+    if (!estado) {
+        alert('Por favor, selecione um estado');
+        return;
+    }
+    
+    mostrarLoading(`Buscando empresas no ${estado}...`);
+    
+    try {
+        // Simulação de busca por estado
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        const empresas = gerarEmpresasPorEstado(estado);
+        empresasEncontradas = empresas;
+        exibirListaEmpresas(empresas, `Empresas encontradas no estado ${estado}`);
+        
+    } catch (error) {
+        mostrarErro('Erro ao buscar empresas por estado');
+    }
+}
+
+// Função para aplicar filtro por atividade
+async function aplicarFiltroAtividade() {
+    const atividade = document.getElementById('atividadeInput').value;
+    
+    if (!atividade) {
+        alert('Por favor, digite uma atividade');
+        return;
+    }
+    
+    mostrarLoading(`Buscando empresas com atividade: ${atividade}...`);
+    
+    try {
+        // Simulação de busca por atividade
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        const empresas = gerarEmpresasPorAtividade(atividade);
+        empresasEncontradas = empresas;
+        exibirListaEmpresas(empresas, `Empresas com atividade: ${atividade}`);
+        
+    } catch (error) {
+        mostrarErro('Erro ao buscar empresas por atividade');
+    }
+}
+
+// Função para aplicar filtro por nome
+async function aplicarFiltroNome() {
+    const nome = document.getElementById('nomeInput').value;
+    
+    if (!nome) {
+        alert('Por favor, digite um nome');
+        return;
+    }
+    
+    mostrarLoading(`Buscando empresas com nome: ${nome}...`);
+    
+    try {
+        // Simulação de busca por nome
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        const empresas = gerarEmpresasPorNome(nome);
+        empresasEncontradas = empresas;
+        exibirListaEmpresas(empresas, `Empresas com nome: ${nome}`);
+        
+    } catch (error) {
+        mostrarErro('Erro ao buscar empresas por nome');
+    }
+}
+
+// Função para gerar empresas simuladas por cidade
+function gerarEmpresasPorCidade(cidade, estado) {
+    const empresas = [];
+    const quantidades = [5, 8, 10, 12, 15];
+    const quantidade = quantidades[Math.floor(Math.random() * quantidades.length)];
+    
+    const nomes = [
+        'Comércio', 'Indústria', 'Serviços', 'Consultoria', 'Tecnologia',
+        'Construção', 'Alimentação', 'Transportes', 'Saúde', 'Educação'
+    ];
+    
+    const atividades = [
+        'Comércio varejista', 'Prestação de serviços', 'Indústria de transformação',
+        'Consultoria empresarial', 'Desenvolvimento de software', 'Construção civil',
+        'Restaurante', 'Transporte rodoviário', 'Clínica médica', 'Ensino fundamental'
+    ];
+    
+    for (let i = 0; i < quantidade; i++) {
+        const nomeIndex = Math.floor(Math.random() * nomes.length);
+        const atividadeIndex = Math.floor(Math.random() * atividades.length);
+        const cnpjBase = String(Math.floor(Math.random() * 10000000000000)).padStart(14, '0');
+        
+        empresas.push({
+            cnpj: formatarCNPJ(cnpjBase),
+            razao_social: `${nomes[nomeIndex]} ${cidade} LTDA`,
+            nome_fantasia: `${nomes[nomeIndex]} ${cidade}`,
+            atividade_principal: atividades[atividadeIndex],
+            endereco: {
+                cidade: cidade,
+                estado: estado
+            }
+        });
+    }
+    
+    return empresas;
+}
+
+// Função para gerar empresas simuladas por estado
+function gerarEmpresasPorEstado(estado) {
+    const empresas = [];
+    const cidadesPorEstado = {
+        'SP': ['São Paulo', 'Campinas', 'Santos', 'Ribeirão Preto', 'São José dos Campos'],
+        'RJ': ['Rio de Janeiro', 'Niterói', 'Petrópolis', 'Campos', 'Nova Iguaçu'],
+        'MG': ['Belo Horizonte', 'Uberlândia', 'Contagem', 'Juiz de Fora', 'Montes Claros'],
+        'RS': ['Porto Alegre', 'Caxias do Sul', 'Pelotas', 'Santa Maria', 'Novo Hamburgo'],
+        'BA': ['Salvador', 'Feira de Santana', 'Vitória da Conquista', 'Camaçari', 'Itabuna'],
+        'PR': ['Curitiba', 'Londrina', 'Maringá', 'Ponta Grossa', 'Cascavel'],
+        'PE': ['Recife', 'Olinda', 'Jaboatão', 'Caruaru', 'Petrolina'],
+        'CE': ['Fortaleza', 'Caucaia', 'Juazeiro do Norte', 'Sobral', 'Crato'],
+        'DF': ['Brasília', 'Taguatinga', 'Ceilândia', 'Planaltina', 'Gama'],
+        'AM': ['Manaus', 'Parintins', 'Itacoatiara', 'Manacapuru', 'Coari']
+    };
+    
+    const cidades = cidadesPorEstado[estado] || ['Capital', 'Interior'];
+    const quantidade = Math.floor(Math.random() * 20) + 10;
+    
+    for (let i = 0; i < quantidade; i++) {
+        const cidade = cidades[Math.floor(Math.random() * cidades.length)];
+        const cnpjBase = String(Math.floor(Math.random() * 10000000000000)).padStart(14, '0');
+        
+        empresas.push({
+            cnpj: formatarCNPJ(cnpjBase),
+            razao_social: `Empresa ${String(i + 1).padStart(3, '0')} ${cidade} LTDA`,
+            nome_fantasia: `Empresa ${String(i + 1).padStart(3, '0')}`,
+            atividade_principal: 'Atividade comercial',
+            endereco: {
+                cidade: cidade,
+                estado: estado
+            }
+        });
+    }
+    
+    return empresas;
+}
+
+// Função para gerar empresas por atividade
+function gerarEmpresasPorAtividade(atividade) {
+    const empresas = [];
+    const quantidade = Math.floor(Math.random() * 15) + 5;
+    
+    for (let i = 0; i < quantidade; i++) {
+        const cnpjBase = String(Math.floor(Math.random() * 10000000000000)).padStart(14, '0');
+        
+        empresas.push({
+            cnpj: formatarCNPJ(cnpjBase),
+            razao_social: `${atividade.toUpperCase()} ${String(i + 1).padStart(3, '0')} LTDA`,
+            nome_fantasia: `${atividade} ${String(i + 1).padStart(3, '0')}`,
+            atividade_principal: atividade,
+            endereco: {
+                cidade: 'Cidade Exemplo',
+                estado: 'SP'
+            }
+        });
+    }
+    
+    return empresas;
+}
+
+// Função para gerar empresas por nome
+function gerarEmpresasPorNome(nome) {
+    const empresas = [];
+    const quantidade = Math.floor(Math.random() * 10) + 3;
+    
+    for (let i = 0; i < quantidade; i++) {
+        const cnpjBase = String(Math.floor(Math.random() * 10000000000000)).padStart(14, '0');
+        
+        empresas.push({
+            cnpj: formatarCNPJ(cnpjBase),
+            razao_social: `${nome.toUpperCase()} ${String(i + 1).padStart(3, '0')} LTDA`,
+            nome_fantasia: nome,
+            atividade_principal: 'Atividade não especificada',
+            endereco: {
+                cidade: 'Cidade Exemplo',
+                estado: 'SP'
+            }
+        });
+    }
+    
+    return empresas;
+}
+
+// Função para exibir lista de empresas
+function exibirListaEmpresas(empresas, titulo) {
+    const companyInfo = document.getElementById('companyInfo');
+    
+    let empresasHtml = `
+        <div style="grid-column: 1/-1;">
+            <h3>${titulo} (${empresas.length} encontradas)</h3>
+            <div class="company-list">
+    `;
+    
+    empresas.forEach(empresa => {
+        empresasHtml += `
+            <div class="company-card" onclick="buscarCNPJEspecifico('${empresa.cnpj.replace(/[^\d]/g, '')}')">
+                <h4>${empresa.nome_fantasia || empresa.razao_social}</h4>
+                <p><strong>CNPJ:</strong> <span class="cnpj-small">${empresa.cnpj}</span></p>
+                <p><strong>Razão Social:</strong> ${empresa.razao_social}</p>
+                <p><strong>Atividade:</strong> ${empresa.atividade_principal}</p>
+                <p><strong>Localização:</strong> ${empresa.endereco.cidade}/${empresa.endereco.estado}</p>
+                <p style="color: #667eea; margin-top: 10px;">🔍 Clique para ver detalhes</p>
+            </div>
+        `;
+    });
+    
+    empresasHtml += `
+            </div>
+        </div>
+    `;
+    
+    companyInfo.innerHTML = empresasHtml;
+}
+
+// Função para buscar CNPJ específico quando clicar em um card
+function buscarCNPJEspecifico(cnpj) {
+    document.getElementById('cnpjInput').value = cnpj;
+    consultarCNPJ();
+}
+
+// Função principal de consulta
+async function consultarCNPJ() {
+    let cnpj = document.getElementById('cnpjInput').value.replace(/[^\d]/g, '');
+    
+    if (!cnpj) {
+        alert('Por favor, digite um CNPJ');
+        return;
+    }
+
+    // Validação básica do CNPJ
+    if (cnpj.length !== 14) {
+        alert('CNPJ deve ter 14 dígitos');
+        return;
+    }
+
+    const searchType = document.querySelector('input[name="searchType"]:checked').value;
+    
+    mostrarLoading(`Consultando CNPJ ${formatarCNPJ(cnpj)}...`);
+
+    try {
+        // Consulta à API real da BrasilAPI
+        const response = await fetch(`${API_BASE_URL}/cnpj/v1/${cnpj}`);
+        
+        if (!response.ok) {
+            throw new Error('CNPJ não encontrado');
+        }
+        
+        const data = await response.json();
+        currentCompanyData = data;
+        
+        exibirResultado(data, searchType);
+        
+    } catch (error) {
+        console.error('Erro na consulta:', error);
+        
+        // Fallback para dados simulados em caso de erro
+        const dataSimulada = await simularConsultaCNPJ(cnpj, searchType);
+        currentCompanyData = dataSimulada;
+        exibirResultado(dataSimulada, searchType);
+        
+        mostrarAviso('Usando dados simulados - API temporariamente indisponível');
+    }
+}
+
+// Função para simular dados (fallback)
 async function simularConsultaCNPJ(cnpj, searchType) {
-    // Simula um atraso de rede
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    const empresas = {
-        // SP - Capital
-        '06990590000123': {
-            cnpj: '06.990.590/0001-23',
-            razao_social: 'MAGAZINE LUIZA S.A.',
-            nome_fantasia: 'Magazine Luiza',
-            data_abertura: '16/04/2004',
-            situacao_cadastral: 'Ativa',
-            data_situacao_cadastral: '16/04/2004',
-            capital_social: '5.847.829.483,41',
-            natureza_juridica: 'Sociedade Anônima Aberta',
-            porte: 'DEMAIS',
-            atividade_principal: 'Comércio varejista de móveis, artigos de iluminação e outros artigos para residência',
-            atividades_secundarias: ['Comércio varejista de eletrodomésticos', 'Comércio varejista de equipamentos de informática'],
-            endereco: {
-                logradouro: 'Av. Brigadeiro Faria Lima',
-                numero: '3477',
-                complemento: '18º Andar',
-                bairro: 'Itaim Bibi',
-                cidade: 'São Paulo',
-                estado: 'SP',
-                cep: '04538-133'
-            },
-            contato: {
-                telefone: '(11) 3504-3504',
-                email: 'relacionamento@magazineluiza.com.br'
-            },
-            simples_nacional: {
-                optante: true,
-                data_opcao: '01/07/2007',
-                data_exclusao: null
-            },
-            quadros_societarios: [
-                { nome: 'Federica Aparecida Trajano', qualificacao: 'Sócio-Administrador' },
-                { nome: 'Luiza Helena Trajano', qualificacao: 'Presidente do Conselho' }
-            ],
-            cnae: '4754-7/01',
-            cnae_fiscal: '4754-7/01',
-            inscricoes_estaduais: ['112.223.445.556'],
-            inscricao_municipal: '12345678',
-            email: 'relacionamento@magazineluiza.com.br',
-            telefone1: '(11) 3504-3504',
-            telefone2: '(11) 3504-3505',
-            site: 'www.magazineluiza.com.br',
-            rede_social: '@magazineluiza',
-            regime_tributario: 'Lucro Real',
-            faturamento_anual: 'R$ 35,2 bilhões',
-            numero_funcionarios: '45.000',
-            matriz_filial: 'Matriz',
-            codigo_municipio: '7107',
-            codigo_uf: '35'
-        },
-        
-        // DF - Brasília
-        '33000167000101': {
-            cnpj: '33.000.167/0001-01',
-            razao_social: 'BANCO DO BRASIL S.A.',
-            nome_fantasia: 'Banco do Brasil',
-            data_abertura: '12/10/1808',
-            situacao_cadastral: 'Ativa',
-            capital_social: '90.000.000.000,00',
-            natureza_juridica: 'Sociedade de Economia Mista',
-            porte: 'DEMAIS',
-            atividade_principal: 'Banco Múltiplo',
-            atividades_secundarias: ['Administração de consórcios', 'Corretora de títulos e valores mobiliários'],
-            endereco: {
-                logradouro: 'SBS Quadra 01 Bloco A',
-                numero: 'S/N',
-                complemento: 'Edifício Sede III',
-                bairro: 'Asa Sul',
-                cidade: 'Brasília',
-                estado: 'DF',
-                cep: '70073-901'
-            },
-            contato: {
-                telefone: '(61) 3493-3000',
-                email: 'faleconosco@bb.com.br'
-            },
-            simples_nacional: {
-                optante: false,
-                data_opcao: null,
-                data_exclusao: null
-            },
-            quadros_societarios: [
-                { nome: 'União Federal', qualificacao: 'Acionista Majoritário' },
-                { nome: 'Tarciana Medeiros', qualificacao: 'Presidente' }
-            ],
-            cnae: '6422-1/00',
-            cnae_fiscal: '6422-1/00',
-            inscricoes_estaduais: ['073.865.499.001'],
-            inscricao_municipal: '12345678',
-            telefone1: '(61) 3493-3000',
-            telefone2: '(61) 3493-3001',
-            site: 'www.bb.com.br',
-            rede_social: '@bancodobrasil',
-            regime_tributario: 'Lucro Real',
-            faturamento_anual: 'R$ 320 bilhões',
-            numero_funcionarios: '85.000',
-            matriz_filial: 'Matriz',
-            codigo_municipio: '9701',
-            codigo_uf: '53'
-        },
-        
-        // RJ - Rio de Janeiro
-        '60872504000123': {
-            cnpj: '60.872.504/0001-23',
-            razao_social: 'PETROLEO BRASILEIRO S A PETROBRAS',
-            nome_fantasia: 'Petrobras',
-            data_abertura: '03/10/1953',
-            situacao_cadastral: 'Ativa',
-            capital_social: '205.419.716.717,75',
-            natureza_juridica: 'Sociedade de Economia Mista',
-            porte: 'DEMAIS',
-            atividade_principal: 'Exploração, refino e comercialização de petróleo e derivados',
-            atividades_secundarias: ['Geração de energia elétrica', 'Transporte de gás natural'],
-            endereco: {
-                logradouro: 'Av. República do Chile',
-                numero: '65',
-                complemento: 'Centro Empresarial',
-                bairro: 'Centro',
-                cidade: 'Rio de Janeiro',
-                estado: 'RJ',
-                cep: '20031-912'
-            },
-            contato: {
-                telefone: '(21) 3224-1000',
-                email: 'faleconosco@petrobras.com.br'
-            },
-            simples_nacional: {
-                optante: false,
-                data_opcao: null,
-                data_exclusao: null
-            },
-            quadros_societarios: [
-                { nome: 'União Federal', qualificacao: 'Acionista Majoritário' },
-                { nome: 'Jean Paul Prates', qualificacao: 'Presidente' }
-            ],
-            cnae: '1921-7/00',
-            cnae_fiscal: '1921-7/00',
-            inscricoes_estaduais: ['876.543.21.00'],
-            inscricao_municipal: '12345678',
-            telefone1: '(21) 3224-1000',
-            telefone2: '(21) 3224-1001',
-            site: 'www.petrobras.com.br',
-            rede_social: '@petrobras',
-            regime_tributario: 'Lucro Real',
-            faturamento_anual: 'R$ 650 bilhões',
-            numero_funcionarios: '45.000',
-            matriz_filial: 'Matriz',
-            codigo_municipio: '6001',
-            codigo_uf: '33'
-        },
-        
-        // SP - Capital (Google)
-        '02164723000107': {
-            cnpj: '02.164.723/0001-07',
-            razao_social: 'GOOGLE BRASIL INTERNET LTDA.',
-            nome_fantasia: 'Google Brasil',
-            data_abertura: '15/12/2005',
-            situacao_cadastral: 'Ativa',
-            capital_social: '1.520.000,00',
-            natureza_juridica: 'Sociedade Empresária Limitada',
-            porte: 'DEMAIS',
-            atividade_principal: 'Portais, provedores de conteúdo e outros serviços de informação na internet',
-            atividades_secundarias: ['Desenvolvimento de programas de computador', 'Consultoria em tecnologia da informação'],
-            endereco: {
-                logradouro: 'Av. Brigadeiro Faria Lima',
-                numero: '3900',
-                complemento: '5º andar',
-                bairro: 'Itaim Bibi',
-                cidade: 'São Paulo',
-                estado: 'SP',
-                cep: '04538-132'
-            },
-            contato: {
-                telefone: '(11) 2395-8400',
-                email: 'suporte@google.com'
-            },
-            simples_nacional: {
-                optante: false,
-                data_opcao: null,
-                data_exclusao: null
-            },
-            quadros_societarios: [
-                { nome: 'Google International LLC', qualificacao: 'Sócio Estrangeiro' },
-                { nome: 'Fábio Coelho', qualificacao: 'Diretor Presidente' }
-            ],
-            cnae: '6319-4/00',
-            cnae_fiscal: '6319-4/00',
-            inscricoes_estaduais: ['145.678.901.234'],
-            inscricao_municipal: '87654321',
-            telefone1: '(11) 2395-8400',
-            telefone2: '(11) 2395-8401',
-            site: 'www.google.com.br',
-            rede_social: '@googlebrasil',
-            regime_tributario: 'Lucro Real',
-            faturamento_anual: 'R$ 15 bilhões',
-            numero_funcionarios: '3.500',
-            matriz_filial: 'Matriz',
-            codigo_municipio: '7107',
-            codigo_uf: '35'
-        },
-        
-        // AM - Manaus (Zona Franca)
-        '04328765000180': {
-            cnpj: '04.328.765/0001-80',
-            razao_social: 'SUNDOWN INDÚSTRIA E COMÉRCIO LTDA',
-            nome_fantasia: 'Sundown',
-            data_abertura: '10/05/1995',
-            situacao_cadastral: 'Ativa',
-            capital_social: '45.000.000,00',
-            natureza_juridica: 'Sociedade Empresária Limitada',
-            porte: 'DEMAIS',
-            atividade_principal: 'Fabricação de produtos de perfumaria e cosméticos',
-            atividades_secundarias: ['Comércio atacadista de cosméticos', 'Fabricação de preparações para higiene pessoal'],
-            endereco: {
-                logradouro: 'Av. Torquato Tapajós',
-                numero: '7890',
-                complemento: 'Distrito Industrial',
-                bairro: 'Flores',
-                cidade: 'Manaus',
-                estado: 'AM',
-                cep: '69058-830'
-            },
-            contato: {
-                telefone: '(92) 3612-4000',
-                email: 'contato@sundown.com.br'
-            },
-            simples_nacional: {
-                optante: false,
-                data_opcao: null,
-                data_exclusao: null
-            },
-            quadros_societarios: [
-                { nome: 'João Carlos Paes Mendonça', qualificacao: 'Sócio-Administrador' }
-            ],
-            cnae: '2063-1/00',
-            cnae_fiscal: '2063-1/00',
-            inscricoes_estaduais: ['04.123.456-7'],
-            inscricao_municipal: '12345678',
-            telefone1: '(92) 3612-4000',
-            telefone2: '(92) 3612-4001',
-            site: 'www.sundown.com.br',
-            rede_social: '@sundownoficial',
-            regime_tributario: 'Lucro Real',
-            faturamento_anual: 'R$ 850 milhões',
-            numero_funcionarios: '1.200',
-            matriz_filial: 'Matriz',
-            codigo_municipio: '1302',
-            codigo_uf: '13'
-        },
-        
-        // CE - Fortaleza
-        '07987654000198': {
-            cnpj: '07.987.654/0001-98',
-            razao_social: 'GRUPO EDSCONSTRUÇÕES LTDA',
-            nome_fantasia: 'Edson Queiroz',
-            data_abertura: '20/03/1980',
-            situacao_cadastral: 'Ativa',
-            capital_social: '250.000.000,00',
-            natureza_juridica: 'Sociedade Empresária Limitada',
-            porte: 'DEMAIS',
-            atividade_principal: 'Incorporação de empreendimentos imobiliários',
-            atividades_secundarias: ['Construção de edifícios', 'Comércio varejista de materiais de construção'],
-            endereco: {
-                logradouro: 'Av. Barão de Studart',
-                numero: '2360',
-                complemento: 'Edifício Gran Marquise',
-                bairro: 'Aldeota',
-                cidade: 'Fortaleza',
-                estado: 'CE',
-                cep: '60120-002'
-            },
-            contato: {
-                telefone: '(85) 3456-7890',
-                email: 'contato@grupoeq.com.br'
-            },
-            simples_nacional: {
-                optante: false,
-                data_opcao: null,
-                data_exclusao: null
-            },
-            quadros_societarios: [
-                { nome: 'Yolanda Queiroz', qualificacao: 'Sócia-Administradora' }
-            ],
-            cnae: '4110-7/00',
-            cnae_fiscal: '4110-7/00',
-            inscricoes_estaduais: ['06.789.012-3'],
-            inscricao_municipal: '12345678',
-            telefone1: '(85) 3456-7890',
-            telefone2: '(85) 3456-7891',
-            site: 'www.grupoedsonqueiroz.com.br',
-            rede_social: '@grupоеq',
-            regime_tributario: 'Lucro Presumido',
-            faturamento_anual: 'R$ 1,2 bilhão',
-            numero_funcionarios: '3.500',
-            matriz_filial: 'Matriz',
-            codigo_municipio: '2304',
-            codigo_uf: '23'
-        },
-        
-        // MG - Belo Horizonte
-        '17123456000190': {
-            cnpj: '17.123.456/0001-90',
-            razao_social: 'USIMINAS S.A.',
-            nome_fantasia: 'Usiminas',
-            data_abertura: '25/04/1956',
-            situacao_cadastral: 'Ativa',
-            capital_social: '12.500.000.000,00',
-            natureza_juridica: 'Sociedade Anônima Aberta',
-            porte: 'DEMAIS',
-            atividade_principal: 'Produção de laminados planos de aço',
-            atividades_secundarias: ['Geração de energia elétrica', 'Logística e transporte'],
-            endereco: {
-                logradouro: 'Av. do Contorno',
-                numero: '6594',
-                complemento: 'Funcionários',
-                bairro: 'Savassi',
-                cidade: 'Belo Horizonte',
-                estado: 'MG',
-                cep: '30110-044'
-            },
-            contato: {
-                telefone: '(31) 3499-8000',
-                email: 'faleconosco@usiminas.com'
-            },
-            simples_nacional: {
-                optante: false,
-                data_opcao: null,
-                data_exclusao: null
-            },
-            quadros_societarios: [
-                { nome: 'Alberto Ono', qualificacao: 'Diretor Presidente' }
-            ],
-            cnae: '2412-1/00',
-            cnae_fiscal: '2412-1/00',
-            inscricoes_estaduais: ['062.123.456.78-91'],
-            inscricao_municipal: '12345678',
-            telefone1: '(31) 3499-8000',
-            telefone2: '(31) 3499-8001',
-            site: 'www.usiminas.com',
-            rede_social: '@usiminas',
-            regime_tributario: 'Lucro Real',
-            faturamento_anual: 'R$ 28 bilhões',
-            numero_funcionarios: '15.000',
-            matriz_filial: 'Matriz',
-            codigo_municipio: '3106',
-            codigo_uf: '31'
-        },
-        
-        // BA - Salvador
-        '15123456000199': {
-            cnpj: '15.123.456/0001-99',
-            razao_social: 'GRUPO OEIRAS',
-            nome_fantasia: 'Oeiras',
-            data_abertura: '12/07/1965',
-            situacao_cadastral: 'Ativa',
-            capital_social: '180.000.000,00',
-            natureza_juridica: 'Sociedade Empresária Limitada',
-            porte: 'DEMAIS',
-            atividade_principal: 'Comércio varejista de materiais de construção',
-            atividades_secundarias: ['Comércio atacadista', 'Indústria de cerâmica'],
-            endereco: {
-                logradouro: 'Av. Antonio Carlos Magalhães',
-                numero: '3245',
-                complemento: 'Edifício Empresarial',
-                bairro: 'Itaigara',
-                cidade: 'Salvador',
-                estado: 'BA',
-                cep: '41820-000'
-            },
-            contato: {
-                telefone: '(71) 3345-6000',
-                email: 'contato@grupooeiras.com.br'
-            },
-            simples_nacional: {
-                optante: false,
-                data_opcao: null,
-                data_exclusao: null
-            },
-            quadros_societarios: [
-                { nome: 'Antonio Oeiras', qualificacao: 'Sócio-Administrador' }
-            ],
-            cnae: '4744-0/05',
-            cnae_fiscal: '4744-0/05',
-            inscricoes_estaduais: ['078.543.210-6'],
-            inscricao_municipal: '12345678',
-            telefone1: '(71) 3345-6000',
-            telefone2: '(71) 3345-6001',
-            site: 'www.grupooeiras.com.br',
-            rede_social: '@grupooeiras',
-            regime_tributario: 'Lucro Presumido',
-            faturamento_anual: 'R$ 950 milhões',
-            numero_funcionarios: '2.800',
-            matriz_filial: 'Matriz',
-            codigo_municipio: '2927',
-            codigo_uf: '29'
-        },
-        
-        // RS - Porto Alegre
-        '92123456000156': {
-            cnpj: '92.123.456/0001-56',
-            razao_social: 'GRUPO RBS',
-            nome_fantasia: 'RBS',
-            data_abertura: '29/08/1957',
-            situacao_cadastral: 'Ativa',
-            capital_social: '350.000.000,00',
-            natureza_juridica: 'Sociedade Anônima Fechada',
-            porte: 'DEMAIS',
-            atividade_principal: 'Atividades de televisão aberta',
-            atividades_secundarias: ['Jornais', 'Rádio', 'Portais de internet'],
-            endereco: {
-                logradouro: 'Av. Ipiranga',
-                numero: '1075',
-                complemento: 'Edifício RBS TV',
-                bairro: 'Azenha',
-                cidade: 'Porto Alegre',
-                estado: 'RS',
-                cep: '90160-093'
-            },
-            contato: {
-                telefone: '(51) 3218-4747',
-                email: 'contato@rbs.com.br'
-            },
-            simples_nacional: {
-                optante: false,
-                data_opcao: null,
-                data_exclusao: null
-            },
-            quadros_societarios: [
-                { nome: 'Eduardo Sirotsky Melzer', qualificacao: 'Diretor Presidente' }
-            ],
-            cnae: '6022-5/01',
-            cnae_fiscal: '6022-5/01',
-            inscricoes_estaduais: ['087/1234567'],
-            inscricao_municipal: '12345678',
-            telefone1: '(51) 3218-4747',
-            telefone2: '(51) 3218-4748',
-            site: 'www.gruporbs.com.br',
-            rede_social: '@gruporbs',
-            regime_tributario: 'Lucro Real',
-            faturamento_anual: 'R$ 1,5 bilhão',
-            numero_funcionarios: '4.500',
-            matriz_filial: 'Matriz',
-            codigo_municipio: '4314',
-            codigo_uf: '43'
-        },
-        
-        // PE - Recife
-        '10123456000188': {
-            cnpj: '10.123.456/0001-88',
-            razao_social: 'GRUPO JCPM',
-            nome_fantasia: 'JCPM',
-            data_abertura: '15/11/1946',
-            situacao_cadastral: 'Ativa',
-            capital_social: '420.000.000,00',
-            natureza_juridica: 'Sociedade Empresária Limitada',
-            porte: 'DEMAIS',
-            atividade_principal: 'Participações societárias',
-            atividades_secundarias: ['Shopping centers', 'Hotéis', 'Agronegócio'],
-            endereco: {
-                logradouro: 'Av. Engenheiro Antônio de Goes',
-                numero: '60',
-                complemento: 'Edifício JCPM',
-                bairro: 'Pina',
-                cidade: 'Recife',
-                estado: 'PE',
-                cep: '51111-110'
-            },
-            contato: {
-                telefone: '(81) 3412-8000',
-                email: 'contato@jcpm.com.br'
-            },
-            simples_nacional: {
-                optante: false,
-                data_opcao: null,
-                data_exclusao: null
-            },
-            quadros_societarios: [
-                { nome: 'João Carlos Paes Mendonça', qualificacao: 'Sócio-Administrador' }
-            ],
-            cnae: '6423-8/00',
-            cnae_fiscal: '6423-8/00',
-            inscricoes_estaduais: ['1234567-89'],
-            inscricao_municipal: '12345678',
-            telefone1: '(81) 3412-8000',
-            telefone2: '(81) 3412-8001',
-            site: 'www.jcpm.com.br',
-            rede_social: '@jcpm',
-            regime_tributario: 'Lucro Real',
-            faturamento_anual: 'R$ 3,2 bilhões',
-            numero_funcionarios: '8.000',
-            matriz_filial: 'Matriz',
-            codigo_municipio: '2611',
-            codigo_uf: '26'
-        }
-    };
-
-    // Se o CNPJ existir na base simulada, retorna os dados
-    if (empresas[cnpj]) {
-        return empresas[cnpj];
-    }
-
-    // Se não existir, retorna dados genéricos baseados no CNPJ com estados variados
-    const estados = ['SP', 'RJ', 'MG', 'RS', 'BA', 'PE', 'CE', 'AM', 'DF', 'PR'];
-    const cidades = {
-        'SP': 'São Paulo',
-        'RJ': 'Rio de Janeiro', 
-        'MG': 'Belo Horizonte',
-        'RS': 'Porto Alegre',
-        'BA': 'Salvador',
-        'PE': 'Recife',
-        'CE': 'Fortaleza',
-        'AM': 'Manaus',
-        'DF': 'Brasília',
-        'PR': 'Curitiba'
+    // Lista de estados e cidades para variar os resultados
+    const estadosBrasil = {
+        'AC': 'Acre', 'AL': 'Alagoas', 'AP': 'Amapá', 'AM': 'Amazonas',
+        'BA': 'Bahia', 'CE': 'Ceará', 'DF': 'Distrito Federal', 'ES': 'Espírito Santo',
+        'GO': 'Goiás', 'MA': 'Maranhão', 'MT': 'Mato Grosso', 'MS': 'Mato Grosso do Sul',
+        'MG': 'Minas Gerais', 'PA': 'Pará', 'PB': 'Paraíba', 'PR': 'Paraná',
+        'PE': 'Pernambuco', 'PI': 'Piauí', 'RJ': 'Rio de Janeiro', 'RN': 'Rio Grande do Norte',
+        'RS': 'Rio Grande do Sul', 'RO': 'Rondônia', 'RR': 'Roraima', 'SC': 'Santa Catarina',
+        'SP': 'São Paulo', 'SE': 'Sergipe', 'TO': 'Tocantins'
     };
     
-    const estado = estados[Math.floor(Math.random() * estados.length)];
-    
-    return {
-        cnpj: formatarCNPJ(cnpj),
-        razao_social: `EMPRESA EXEMPLO ${estado} LTDA`,
-        nome_fantasia: `Empresa ${estado}`,
-        data_abertura: '01/01/2020',
-        situacao_cadastral: 'Ativa',
-        capital_social: '100.000,00',
-        atividade_principal: 'Atividade principal não especificada',
-        endereco: {
-            logradouro: 'Av. Principal',
-            numero: '1000',
-            complemento: 'Sala 101',
-            bairro: 'Centro',
-            cidade: cidades[estado],
-            estado: estado,
-            cep: '00000-000'
-        },
-        contato: {
-            telefone: `(${Math.floor(Math.random() * 10 + 10)}) 1234-5678`,
-            email: `contato@empresa${estado}.com.br`
-        }
-    };
-}
-document.getElementById('cnpjInput').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-        consultarCNPJ();
-    }
-});
+    const cidadesPorEstado = {
+        'SP': ['São Paulo', 'Campinas', 'Santos', 'Ribeirão Preto', 'São José dos Campos'],
+        'RJ': ['Rio de Janeiro', 'Niterói', 'Petrópolis', 'Campos', 'Nova Iguaçu'],
+        'MG': ['Belo Horizonte', 'Uberlândia', 'Contagem', 'Juiz de Fora', 'Montes Claros'],
+        'RS': ['Porto Alegre', 'Caxias do Sul', 'Pelotas', 'Santa Maria', 'Novo Hamburgo'],
+        'BA': ['Salvador', 'Feira de Santana', '
