@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Consulta CNPJ - Sistema Completo</title>
+    <title>Consulta CNPJ - BrasilAPI</title>
     <!-- CSS externo -->
     <link rel="stylesheet" href="style.css">
     <!-- Bibliotecas necessárias -->
@@ -12,38 +12,129 @@
 </head>
 <body>
     <div class="container">
-        <h1>🔍 Consulta CNPJ</h1>
+        <h1>🔍 Consulta CNPJ - BrasilAPI</h1>
         
         <div class="search-section">
             <div class="input-group">
                 <input type="text" id="cnpjInput" placeholder="Digite o CNPJ (apenas números)" maxlength="18">
                 <button onclick="consultarCNPJ()">Consultar</button>
+                <button onclick="limparBusca()" class="clear-btn">Limpar</button>
             </div>
             
             <div class="search-options">
                 <div class="search-option">
                     <label>
-                        <input type="radio" name="searchType" value="basic" checked> Busca Básica
+                        <input type="radio" name="searchType" value="completa" checked> Busca Completa
                     </label>
                 </div>
                 <div class="search-option">
                     <label>
-                        <input type="radio" name="searchType" value="complete"> Busca Completa
-                    </label>
-                </div>
-                <div class="search-option">
-                    <label>
-                        <input type="radio" name="searchType" value="simples"> Simples Nacional
+                        <input type="radio" name="searchType" value="resumida"> Busca Resumida
                     </label>
                 </div>
             </div>
             
+            <div class="search-filters" id="searchFilters">
+                <h4>🔎 Buscar por:</h4>
+                <div class="filter-buttons">
+                    <button onclick="buscarPorCidade()" class="filter-btn">📍 Por Cidade</button>
+                    <button onclick="buscarPorEstado()" class="filter-btn">🗺️ Por Estado</button>
+                    <button onclick="buscarPorAtividade()" class="filter-btn">💼 Por Atividade</button>
+                    <button onclick="buscarPorNome()" class="filter-btn">🏢 Por Nome Fantasia</button>
+                </div>
+                
+                <div id="filtroCidade" class="filter-input" style="display: none;">
+                    <input type="text" id="cidadeInput" placeholder="Digite o nome da cidade">
+                    <select id="estadoSelect">
+                        <option value="">Selecione o estado</option>
+                        <option value="AC">Acre (AC)</option>
+                        <option value="AL">Alagoas (AL)</option>
+                        <option value="AP">Amapá (AP)</option>
+                        <option value="AM">Amazonas (AM)</option>
+                        <option value="BA">Bahia (BA)</option>
+                        <option value="CE">Ceará (CE)</option>
+                        <option value="DF">Distrito Federal (DF)</option>
+                        <option value="ES">Espírito Santo (ES)</option>
+                        <option value="GO">Goiás (GO)</option>
+                        <option value="MA">Maranhão (MA)</option>
+                        <option value="MT">Mato Grosso (MT)</option>
+                        <option value="MS">Mato Grosso do Sul (MS)</option>
+                        <option value="MG">Minas Gerais (MG)</option>
+                        <option value="PA">Pará (PA)</option>
+                        <option value="PB">Paraíba (PB)</option>
+                        <option value="PR">Paraná (PR)</option>
+                        <option value="PE">Pernambuco (PE)</option>
+                        <option value="PI">Piauí (PI)</option>
+                        <option value="RJ">Rio de Janeiro (RJ)</option>
+                        <option value="RN">Rio Grande do Norte (RN)</option>
+                        <option value="RS">Rio Grande do Sul (RS)</option>
+                        <option value="RO">Rondônia (RO)</option>
+                        <option value="RR">Roraima (RR)</option>
+                        <option value="SC">Santa Catarina (SC)</option>
+                        <option value="SP">São Paulo (SP)</option>
+                        <option value="SE">Sergipe (SE)</option>
+                        <option value="TO">Tocantins (TO)</option>
+                    </select>
+                    <button onclick="aplicarFiltroCidade()" class="apply-filter">Buscar</button>
+                </div>
+                
+                <div id="filtroEstado" class="filter-input" style="display: none;">
+                    <select id="estadoFiltroSelect">
+                        <option value="">Selecione o estado</option>
+                        <option value="AC">Acre (AC)</option>
+                        <option value="AL">Alagoas (AL)</option>
+                        <option value="AP">Amapá (AP)</option>
+                        <option value="AM">Amazonas (AM)</option>
+                        <option value="BA">Bahia (BA)</option>
+                        <option value="CE">Ceará (CE)</option>
+                        <option value="DF">Distrito Federal (DF)</option>
+                        <option value="ES">Espírito Santo (ES)</option>
+                        <option value="GO">Goiás (GO)</option>
+                        <option value="MA">Maranhão (MA)</option>
+                        <option value="MT">Mato Grosso (MT)</option>
+                        <option value="MS">Mato Grosso do Sul (MS)</option>
+                        <option value="MG">Minas Gerais (MG)</option>
+                        <option value="PA">Pará (PA)</option>
+                        <option value="PB">Paraíba (PB)</option>
+                        <option value="PR">Paraná (PR)</option>
+                        <option value="PE">Pernambuco (PE)</option>
+                        <option value="PI">Piauí (PI)</option>
+                        <option value="RJ">Rio de Janeiro (RJ)</option>
+                        <option value="RN">Rio Grande do Norte (RN)</option>
+                        <option value="RS">Rio Grande do Sul (RS)</option>
+                        <option value="RO">Rondônia (RO)</option>
+                        <option value="RR">Roraima (RR)</option>
+                        <option value="SC">Santa Catarina (SC)</option>
+                        <option value="SP">São Paulo (SP)</option>
+                        <option value="SE">Sergipe (SE)</option>
+                        <option value="TO">Tocantins (TO)</option>
+                    </select>
+                    <button onclick="aplicarFiltroEstado()" class="apply-filter">Buscar</button>
+                </div>
+                
+                <div id="filtroAtividade" class="filter-input" style="display: none;">
+                    <input type="text" id="atividadeInput" placeholder="Digite a atividade principal (ex: comércio, serviços)">
+                    <button onclick="aplicarFiltroAtividade()" class="apply-filter">Buscar</button>
+                </div>
+                
+                <div id="filtroNome" class="filter-input" style="display: none;">
+                    <input type="text" id="nomeInput" placeholder="Digite o nome fantasia ou razão social">
+                    <button onclick="aplicarFiltroNome()" class="apply-filter">Buscar</button>
+                </div>
+            </div>
+            
             <div class="example-cnpjs">
-                <strong>CNPJs para teste:</strong><br>
-                <span onclick="preencherCNPJ('06990590000123')">06990590000123 - Magazine Luiza</span>
-                <span onclick="preencherCNPJ('33000167000101')">33000167000101 - Banco do Brasil</span>
-                <span onclick="preencherCNPJ('60872504000123')">60872504000123 - Petrobras</span>
-                <span onclick="preencherCNPJ('02164723000107')">02164723000107 - Google Brasil</span>
+                <strong>CNPJs para teste (empresas reais):</strong><br>
+                <span onclick="preencherCNPJ('06990590000123')">06.990.590/0001-23 - Magazine Luiza (SP)</span>
+                <span onclick="preencherCNPJ('33000167000101')">33.000.167/0001-01 - Banco do Brasil (DF)</span>
+                <span onclick="preencherCNPJ('60872504000123')">60.872.504/0001-23 - Petrobras (RJ)</span>
+                <span onclick="preencherCNPJ('02164723000107')">02.164.723/0001-07 - Google Brasil (SP)</span>
+                <span onclick="preencherCNPJ('59241127000150')">59.241.127/0001-50 - Ambev (SP)</span>
+                <span onclick="preencherCNPJ('02897655000113')">02.897.655/0001-13 - Natura (SP)</span>
+                <span onclick="preencherCNPJ('15156886000188')">15.156.886/0001-88 - Localiza (MG)</span>
+                <span onclick="preencherCNPJ('02916265000160')">02.916.265/0001-60 - Magazine Luiza (SP)</span>
+                <span onclick="preencherCNPJ('33041260000100')">33.041.260/0001-00 - Vivo (SP)</span>
+                <span onclick="preencherCNPJ('04232557000160')">04.232.557/0001-60 - Boticário (PR)</span>
             </div>
         </div>
 
@@ -52,19 +143,20 @@
                 <h2>Resultado da Consulta</h2>
                 <div class="action-buttons">
                     <button onclick="gerarPDF()" class="pdf-btn">📄 Gerar PDF</button>
+                    <button onclick="exportarJSON()" class="json-btn">📋 Exportar JSON</button>
                 </div>
             </div>
             
             <div id="companyInfo" class="company-info">
                 <!-- As informações da empresa serão inseridas aqui -->
                 <div style="grid-column: 1/-1; text-align: center; color: #666; padding: 40px;">
-                    Digite um CNPJ para iniciar a consulta
+                    Digite um CNPJ ou use os filtros para buscar empresas
                 </div>
             </div>
         </div>
         
         <div class="footer">
-            Fonte: Dados públicos da Receita Federal | Última atualização: 2024
+            Fonte: <a href="https://brasilapi.com.br/" target="_blank">BrasilAPI</a> - Dados públicos da Receita Federal | Atualizado em tempo real
         </div>
     </div>
 
