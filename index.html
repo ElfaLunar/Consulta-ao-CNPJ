@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta CNPJ - Sistema Completo</title>
+    <!-- CSS externo -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Bibliotecas necessárias -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Consulta CNPJ</h1>
+        
+        <div class="search-section">
+            <div class="input-group">
+                <input type="text" id="cnpjInput" placeholder="Digite o CNPJ (apenas números)" maxlength="18">
+                <button onclick="consultarCNPJ()">Consultar</button>
+            </div>
+            
+            <div class="search-options">
+                <div class="search-option">
+                    <label>
+                        <input type="radio" name="searchType" value="basic" checked> Busca Básica
+                    </label>
+                </div>
+                <div class="search-option">
+                    <label>
+                        <input type="radio" name="searchType" value="complete"> Busca Completa
+                    </label>
+                </div>
+                <div class="search-option">
+                    <label>
+                        <input type="radio" name="searchType" value="simples"> Simples Nacional
+                    </label>
+                </div>
+            </div>
+            
+            <div class="example-cnpjs">
+                <strong>CNPJs para teste:</strong><br>
+                <span onclick="preencherCNPJ('06990590000123')">06990590000123 - Magazine Luiza</span>
+                <span onclick="preencherCNPJ('33000167000101')">33000167000101 - Banco do Brasil</span>
+                <span onclick="preencherCNPJ('60872504000123')">60872504000123 - Petrobras</span>
+                <span onclick="preencherCNPJ('02164723000107')">02164723000107 - Google Brasil</span>
+            </div>
+        </div>
+
+        <div class="result-section" id="resultSection">
+            <div class="result-header">
+                <h2>Resultado da Consulta</h2>
+                <div class="action-buttons">
+                    <button onclick="gerarPDF()" class="pdf-btn">📄 Gerar PDF</button>
+                </div>
+            </div>
+            
+            <div id="companyInfo" class="company-info">
+                <!-- As informações da empresa serão inseridas aqui -->
+                <div style="grid-column: 1/-1; text-align: center; color: #666; padding: 40px;">
+                    Digite um CNPJ para iniciar a consulta
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            Fonte: Dados públicos da Receita Federal | Última atualização: 2024
+        </div>
+    </div>
+
+    <!-- JavaScript externo -->
+    <script src="script.js"></script>
+</body>
+</html>
