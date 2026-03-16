@@ -2,8 +2,8 @@
 let currentCompanyData = null;
 let empresasEncontradas = [];
 
-// Configuração da API
-const API_BASE_URL = 'https://brasilapi.com.br/api';
+// Configuração da API - Usando API alternativa que funciona
+const API_BASE_URL = 'https://receitaws.com.br/v1/cnpj';
 
 // Função para preencher o input com CNPJ de exemplo
 function preencherCNPJ(cnpj) {
@@ -22,6 +22,42 @@ function limparBusca() {
     currentCompanyData = null;
     empresasEncontradas = [];
     esconderTodosFiltros();
+}
+
+// Função para mostrar loading
+function mostrarLoading(mensagem) {
+    document.getElementById('companyInfo').innerHTML = `
+        <div class="loading" style="grid-column: 1/-1; text-align: center; padding: 60px;">
+            ${mensagem}
+        </div>
+    `;
+}
+
+// Função para mostrar erro
+function mostrarErro(mensagem) {
+    document.getElementById('companyInfo').innerHTML = `
+        <div class="error-message" style="grid-column: 1/-1;">
+            ❌ ${mensagem}
+        </div>
+    `;
+}
+
+// Função para mostrar aviso
+function mostrarAviso(mensagem) {
+    const aviso = document.createElement('div');
+    aviso.className = 'error-message';
+    aviso.style.background = '#fff3cd';
+    aviso.style.color = '#856404';
+    aviso.style.border = '1px solid #ffeeba';
+    aviso.style.marginTop = '10px';
+    aviso.innerHTML = `⚠️ ${mensagem}`;
+    
+    const resultSection = document.getElementById('resultSection');
+    resultSection.insertBefore(aviso, document.getElementById('companyInfo'));
+    
+    setTimeout(() => {
+        aviso.remove();
+    }, 5000);
 }
 
 // Função para esconder todos os filtros
@@ -53,261 +89,30 @@ function buscarPorNome() {
     document.getElementById('filtroNome').style.display = 'flex';
 }
 
-// Função para aplicar filtro por cidade
-async function aplicarFiltroCidade() {
-    const cidade = document.getElementById('cidadeInput').value;
-    const estado = document.getElementById('estadoSelect').value;
-    
-    if (!cidade || !estado) {
-        alert('Por favor, preencha a cidade e selecione o estado');
-        return;
-    }
-    
-    mostrarLoading('Buscando empresas na cidade...');
-    
-    try {
-        // Simulação de busca por cidade (API real não tem esse endpoint específico)
-        // Na prática, você precisaria de uma API especializada para isso
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        
-        // Dados simulados para demonstração
-        const empresas = gerarEmpresasPorCidade(cidade, estado);
-        empresasEncontradas = empresas;
-        exibirListaEmpresas(empresas, `Empresas encontradas em ${cidade}/${estado}`);
-        
-    } catch (error) {
-        mostrarErro('Erro ao buscar empresas por cidade');
-    }
+// Função para formatar CNPJ
+function formatarCNPJ(cnpj) {
+    if (!cnpj) return '';
+    cnpj = cnpj.replace(/\D/g, '');
+    return cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
 }
 
-// Função para aplicar filtro por estado
-async function aplicarFiltroEstado() {
-    const estado = document.getElementById('estadoFiltroSelect').value;
-    
-    if (!estado) {
-        alert('Por favor, selecione um estado');
-        return;
+// Função para formatar telefone
+function formatarTelefone(telefone) {
+    if (!telefone) return 'Não informado';
+    telefone = telefone.replace(/\D/g, '');
+    if (telefone.length === 10) {
+        return telefone.replace(/^(\d{2})(\d{4})(\d{4})$/, '($1) $2-$3');
+    } else if (telefone.length === 11) {
+        return telefone.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
     }
-    
-    mostrarLoading(`Buscando empresas no ${estado}...`);
-    
-    try {
-        // Simulação de busca por estado
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        
-        const empresas = gerarEmpresasPorEstado(estado);
-        empresasEncontradas = empresas;
-        exibirListaEmpresas(empresas, `Empresas encontradas no estado ${estado}`);
-        
-    } catch (error) {
-        mostrarErro('Erro ao buscar empresas por estado');
-    }
+    return telefone;
 }
 
-// Função para aplicar filtro por atividade
-async function aplicarFiltroAtividade() {
-    const atividade = document.getElementById('atividadeInput').value;
-    
-    if (!atividade) {
-        alert('Por favor, digite uma atividade');
-        return;
-    }
-    
-    mostrarLoading(`Buscando empresas com atividade: ${atividade}...`);
-    
-    try {
-        // Simulação de busca por atividade
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        
-        const empresas = gerarEmpresasPorAtividade(atividade);
-        empresasEncontradas = empresas;
-        exibirListaEmpresas(empresas, `Empresas com atividade: ${atividade}`);
-        
-    } catch (error) {
-        mostrarErro('Erro ao buscar empresas por atividade');
-    }
-}
-
-// Função para aplicar filtro por nome
-async function aplicarFiltroNome() {
-    const nome = document.getElementById('nomeInput').value;
-    
-    if (!nome) {
-        alert('Por favor, digite um nome');
-        return;
-    }
-    
-    mostrarLoading(`Buscando empresas com nome: ${nome}...`);
-    
-    try {
-        // Simulação de busca por nome
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        
-        const empresas = gerarEmpresasPorNome(nome);
-        empresasEncontradas = empresas;
-        exibirListaEmpresas(empresas, `Empresas com nome: ${nome}`);
-        
-    } catch (error) {
-        mostrarErro('Erro ao buscar empresas por nome');
-    }
-}
-
-// Função para gerar empresas simuladas por cidade
-function gerarEmpresasPorCidade(cidade, estado) {
-    const empresas = [];
-    const quantidades = [5, 8, 10, 12, 15];
-    const quantidade = quantidades[Math.floor(Math.random() * quantidades.length)];
-    
-    const nomes = [
-        'Comércio', 'Indústria', 'Serviços', 'Consultoria', 'Tecnologia',
-        'Construção', 'Alimentação', 'Transportes', 'Saúde', 'Educação'
-    ];
-    
-    const atividades = [
-        'Comércio varejista', 'Prestação de serviços', 'Indústria de transformação',
-        'Consultoria empresarial', 'Desenvolvimento de software', 'Construção civil',
-        'Restaurante', 'Transporte rodoviário', 'Clínica médica', 'Ensino fundamental'
-    ];
-    
-    for (let i = 0; i < quantidade; i++) {
-        const nomeIndex = Math.floor(Math.random() * nomes.length);
-        const atividadeIndex = Math.floor(Math.random() * atividades.length);
-        const cnpjBase = String(Math.floor(Math.random() * 10000000000000)).padStart(14, '0');
-        
-        empresas.push({
-            cnpj: formatarCNPJ(cnpjBase),
-            razao_social: `${nomes[nomeIndex]} ${cidade} LTDA`,
-            nome_fantasia: `${nomes[nomeIndex]} ${cidade}`,
-            atividade_principal: atividades[atividadeIndex],
-            endereco: {
-                cidade: cidade,
-                estado: estado
-            }
-        });
-    }
-    
-    return empresas;
-}
-
-// Função para gerar empresas simuladas por estado
-function gerarEmpresasPorEstado(estado) {
-    const empresas = [];
-    const cidadesPorEstado = {
-        'SP': ['São Paulo', 'Campinas', 'Santos', 'Ribeirão Preto', 'São José dos Campos'],
-        'RJ': ['Rio de Janeiro', 'Niterói', 'Petrópolis', 'Campos', 'Nova Iguaçu'],
-        'MG': ['Belo Horizonte', 'Uberlândia', 'Contagem', 'Juiz de Fora', 'Montes Claros'],
-        'RS': ['Porto Alegre', 'Caxias do Sul', 'Pelotas', 'Santa Maria', 'Novo Hamburgo'],
-        'BA': ['Salvador', 'Feira de Santana', 'Vitória da Conquista', 'Camaçari', 'Itabuna'],
-        'PR': ['Curitiba', 'Londrina', 'Maringá', 'Ponta Grossa', 'Cascavel'],
-        'PE': ['Recife', 'Olinda', 'Jaboatão', 'Caruaru', 'Petrolina'],
-        'CE': ['Fortaleza', 'Caucaia', 'Juazeiro do Norte', 'Sobral', 'Crato'],
-        'DF': ['Brasília', 'Taguatinga', 'Ceilândia', 'Planaltina', 'Gama'],
-        'AM': ['Manaus', 'Parintins', 'Itacoatiara', 'Manacapuru', 'Coari']
-    };
-    
-    const cidades = cidadesPorEstado[estado] || ['Capital', 'Interior'];
-    const quantidade = Math.floor(Math.random() * 20) + 10;
-    
-    for (let i = 0; i < quantidade; i++) {
-        const cidade = cidades[Math.floor(Math.random() * cidades.length)];
-        const cnpjBase = String(Math.floor(Math.random() * 10000000000000)).padStart(14, '0');
-        
-        empresas.push({
-            cnpj: formatarCNPJ(cnpjBase),
-            razao_social: `Empresa ${String(i + 1).padStart(3, '0')} ${cidade} LTDA`,
-            nome_fantasia: `Empresa ${String(i + 1).padStart(3, '0')}`,
-            atividade_principal: 'Atividade comercial',
-            endereco: {
-                cidade: cidade,
-                estado: estado
-            }
-        });
-    }
-    
-    return empresas;
-}
-
-// Função para gerar empresas por atividade
-function gerarEmpresasPorAtividade(atividade) {
-    const empresas = [];
-    const quantidade = Math.floor(Math.random() * 15) + 5;
-    
-    for (let i = 0; i < quantidade; i++) {
-        const cnpjBase = String(Math.floor(Math.random() * 10000000000000)).padStart(14, '0');
-        
-        empresas.push({
-            cnpj: formatarCNPJ(cnpjBase),
-            razao_social: `${atividade.toUpperCase()} ${String(i + 1).padStart(3, '0')} LTDA`,
-            nome_fantasia: `${atividade} ${String(i + 1).padStart(3, '0')}`,
-            atividade_principal: atividade,
-            endereco: {
-                cidade: 'Cidade Exemplo',
-                estado: 'SP'
-            }
-        });
-    }
-    
-    return empresas;
-}
-
-// Função para gerar empresas por nome
-function gerarEmpresasPorNome(nome) {
-    const empresas = [];
-    const quantidade = Math.floor(Math.random() * 10) + 3;
-    
-    for (let i = 0; i < quantidade; i++) {
-        const cnpjBase = String(Math.floor(Math.random() * 10000000000000)).padStart(14, '0');
-        
-        empresas.push({
-            cnpj: formatarCNPJ(cnpjBase),
-            razao_social: `${nome.toUpperCase()} ${String(i + 1).padStart(3, '0')} LTDA`,
-            nome_fantasia: nome,
-            atividade_principal: 'Atividade não especificada',
-            endereco: {
-                cidade: 'Cidade Exemplo',
-                estado: 'SP'
-            }
-        });
-    }
-    
-    return empresas;
-}
-
-// Função para exibir lista de empresas
-function exibirListaEmpresas(empresas, titulo) {
-    const companyInfo = document.getElementById('companyInfo');
-    
-    let empresasHtml = `
-        <div style="grid-column: 1/-1;">
-            <h3>${titulo} (${empresas.length} encontradas)</h3>
-            <div class="company-list">
-    `;
-    
-    empresas.forEach(empresa => {
-        empresasHtml += `
-            <div class="company-card" onclick="buscarCNPJEspecifico('${empresa.cnpj.replace(/[^\d]/g, '')}')">
-                <h4>${empresa.nome_fantasia || empresa.razao_social}</h4>
-                <p><strong>CNPJ:</strong> <span class="cnpj-small">${empresa.cnpj}</span></p>
-                <p><strong>Razão Social:</strong> ${empresa.razao_social}</p>
-                <p><strong>Atividade:</strong> ${empresa.atividade_principal}</p>
-                <p><strong>Localização:</strong> ${empresa.endereco.cidade}/${empresa.endereco.estado}</p>
-                <p style="color: #667eea; margin-top: 10px;">🔍 Clique para ver detalhes</p>
-            </div>
-        `;
-    });
-    
-    empresasHtml += `
-            </div>
-        </div>
-    `;
-    
-    companyInfo.innerHTML = empresasHtml;
-}
-
-// Função para buscar CNPJ específico quando clicar em um card
-function buscarCNPJEspecifico(cnpj) {
-    document.getElementById('cnpjInput').value = cnpj;
-    consultarCNPJ();
+// Função para formatar CEP
+function formatarCEP(cep) {
+    if (!cep) return 'Não informado';
+    cep = cep.replace(/\D/g, '');
+    return cep.replace(/^(\d{5})(\d{3})$/, '$1-$2');
 }
 
 // Função principal de consulta
@@ -330,48 +135,546 @@ async function consultarCNPJ() {
     mostrarLoading(`Consultando CNPJ ${formatarCNPJ(cnpj)}...`);
 
     try {
-        // Consulta à API real da BrasilAPI
-        const response = await fetch(`${API_BASE_URL}/cnpj/v1/${cnpj}`);
+        // Consulta à API real da ReceitaWS (gratuita)
+        const response = await fetch(`${API_BASE_URL}/${cnpj}`);
         
         if (!response.ok) {
-            throw new Error('CNPJ não encontrado');
+            throw new Error('CNPJ não encontrado ou API indisponível');
         }
         
         const data = await response.json();
-        currentCompanyData = data;
         
+        // Verificar se a API retornou erro
+        if (data.status === 'ERROR') {
+            throw new Error(data.message || 'Erro na consulta');
+        }
+        
+        currentCompanyData = data;
         exibirResultado(data, searchType);
         
     } catch (error) {
         console.error('Erro na consulta:', error);
-        
-        // Fallback para dados simulados em caso de erro
-        const dataSimulada = await simularConsultaCNPJ(cnpj, searchType);
-        currentCompanyData = dataSimulada;
-        exibirResultado(dataSimulada, searchType);
-        
-        mostrarAviso('Usando dados simulados - API temporariamente indisponível');
+        mostrarErro(`Erro ao consultar CNPJ: ${error.message}`);
     }
 }
 
-// Função para simular dados (fallback)
-async function simularConsultaCNPJ(cnpj, searchType) {
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    // Lista de estados e cidades para variar os resultados
-    const estadosBrasil = {
-        'AC': 'Acre', 'AL': 'Alagoas', 'AP': 'Amapá', 'AM': 'Amazonas',
-        'BA': 'Bahia', 'CE': 'Ceará', 'DF': 'Distrito Federal', 'ES': 'Espírito Santo',
-        'GO': 'Goiás', 'MA': 'Maranhão', 'MT': 'Mato Grosso', 'MS': 'Mato Grosso do Sul',
-        'MG': 'Minas Gerais', 'PA': 'Pará', 'PB': 'Paraíba', 'PR': 'Paraná',
-        'PE': 'Pernambuco', 'PI': 'Piauí', 'RJ': 'Rio de Janeiro', 'RN': 'Rio Grande do Norte',
-        'RS': 'Rio Grande do Sul', 'RO': 'Rondônia', 'RR': 'Roraima', 'SC': 'Santa Catarina',
-        'SP': 'São Paulo', 'SE': 'Sergipe', 'TO': 'Tocantins'
-    };
+// Função para exibir o resultado
+function exibirResultado(data, searchType) {
+    const companyInfo = document.getElementById('companyInfo');
     
-    const cidadesPorEstado = {
-        'SP': ['São Paulo', 'Campinas', 'Santos', 'Ribeirão Preto', 'São José dos Campos'],
-        'RJ': ['Rio de Janeiro', 'Niterói', 'Petrópolis', 'Campos', 'Nova Iguaçu'],
-        'MG': ['Belo Horizonte', 'Uberlândia', 'Contagem', 'Juiz de Fora', 'Montes Claros'],
-        'RS': ['Porto Alegre', 'Caxias do Sul', 'Pelotas', 'Santa Maria', 'Novo Hamburgo'],
-        'BA': ['Salvador', 'Feira de Santana', '
+    // Extrair informações da API
+    const cnpj = formatarCNPJ(data.cnpj);
+    const razaoSocial = data.nome || data.razao_social || 'Não informado';
+    const nomeFantasia = data.fantasia || 'Não informado';
+    const dataAbertura = data.abertura || data.data_abertura || 'Não informado';
+    const situacao = data.situacao || 'Não informado';
+    const capitalSocial = data.capital_social || data.capital || '0,00';
+    const atividadePrincipal = data.atividade_principal || 
+                              (data.atividade_principal && data.atividade_principal[0] ? 
+                               data.atividade_principal[0].text : 'Não informado');
+    
+    // Endereço
+    const logradouro = data.logradouro || data.endereco?.logradouro || '';
+    const numero = data.numero || data.endereco?.numero || 'S/N';
+    const complemento = data.complemento || data.endereco?.complemento || '';
+    const bairro = data.bairro || data.endereco?.bairro || '';
+    const cidade = data.municipio || data.endereco?.cidade || '';
+    const estado = data.uf || data.endereco?.estado || '';
+    const cep = formatarCEP(data.cep || data.endereco?.cep);
+    
+    // Contato
+    const telefone = data.telefone || data.contato?.telefone || '';
+    const email = data.email || data.contato?.email || '';
+    
+    // Informações adicionais
+    const porte = data.porte || data.porte_empresa || 'Não informado';
+    const naturezaJuridica = data.natureza_juridica || 'Não informado';
+    const cnae = data.cnae || data.cnae_fiscal || 'Não informado';
+    
+    let html = '';
+
+    if (searchType === 'resumida') {
+        html = `
+            <div class="info-card">
+                <h3>📋 Informações Básicas</h3>
+                <div class="info-item">
+                    <strong>CNPJ:</strong>
+                    <p>${cnpj}</p>
+                </div>
+                <div class="info-item">
+                    <strong>Razão Social:</strong>
+                    <p>${razaoSocial}</p>
+                </div>
+                <div class="info-item">
+                    <strong>Nome Fantasia:</strong>
+                    <p>${nomeFantasia}</p>
+                </div>
+                <div class="info-item">
+                    <strong>Data de Abertura:</strong>
+                    <p>${dataAbertura}</p>
+                </div>
+                <div class="info-item">
+                    <strong>Situação Cadastral:</strong>
+                    <p>${situacao}</p>
+                </div>
+            </div>
+            <div class="info-card">
+                <h3>💰 Informações Financeiras</h3>
+                <div class="info-item">
+                    <strong>Capital Social:</strong>
+                    <p>R$ ${capitalSocial}</p>
+                </div>
+                <div class="info-item">
+                    <strong>Atividade Principal:</strong>
+                    <p>${atividadePrincipal}</p>
+                </div>
+                <div class="info-item">
+                    <strong>Porte da Empresa:</strong>
+                    <p>${porte}</p>
+                </div>
+            </div>
+            <div class="info-card">
+                <h3>📍 Endereço</h3>
+                <div class="info-item">
+                    <strong>Logradouro:</strong>
+                    <p>${logradouro}, ${numero} ${complemento}</p>
+                </div>
+                <div class="info-item">
+                    <strong>Bairro:</strong>
+                    <p>${bairro}</p>
+                </div>
+                <div class="info-item">
+                    <strong>Cidade/UF:</strong>
+                    <p>${cidade} - ${estado}</p>
+                </div>
+                <div class="info-item">
+                    <strong>CEP:</strong>
+                    <p>${cep}</p>
+                </div>
+            </div>
+            <div class="info-card">
+                <h3>📞 Contato</h3>
+                <div class="info-item">
+                    <strong>Telefone:</strong>
+                    <p>${formatarTelefone(telefone)}</p>
+                </div>
+                <div class="info-item">
+                    <strong>E-mail:</strong>
+                    <p>${email || 'Não informado'}</p>
+                </div>
+            </div>
+        `;
+    } else {
+        // Busca completa com mais informações
+        const atividadesSecundarias = data.atividade_secundaria || data.atividades_secundarias || [];
+        let atividadesHtml = '';
+        if (atividadesSecundarias.length > 0) {
+            atividadesSecundarias.forEach(atv => {
+                const texto = atv.text || atv;
+                atividadesHtml += `<p>• ${texto}</p>`;
+            });
+        } else {
+            atividadesHtml = '<p>Não informado</p>';
+        }
+        
+        const qsa = data.qsa || data.quadro_societario || [];
+        let sociosHtml = '';
+        if (qsa.length > 0) {
+            qsa.forEach(socio => {
+                const nome = socio.nome || socio.nome_socio || 'Não informado';
+                const qualificacao = socio.qualificacao || socio.cargo || 'Sócio';
+                sociosHtml += `
+                    <div class="info-item">
+                        <strong>${nome}</strong>
+                        <p>${qualificacao}</p>
+                    </div>
+                `;
+            });
+        } else {
+            sociosHtml = '<p>Não informado</p>';
+        }
+        
+        html = `
+            <div class="info-card">
+                <h3>📋 Dados Cadastrais Completos</h3>
+                <div class="info-item">
+                    <strong>CNPJ:</strong>
+                    <p>${cnpj}</p>
+                </div>
+                <div class="info-item">
+                    <strong>Razão Social:</strong>
+                    <p>${razaoSocial}</p>
+                </div>
+                <div class="info-item">
+                    <strong>Nome Fantasia:</strong>
+                    <p>${nomeFantasia}</p>
+                </div>
+                <div class="info-item">
+                    <strong>Data de Abertura:</strong>
+                    <p>${dataAbertura}</p>
+                </div>
+                <div class="info-item">
+                    <strong>Situação Cadastral:</strong>
+                    <p>${situacao}</p>
+                </div>
+                <div class="info-item">
+                    <strong>Data da Situação:</strong>
+                    <p>${data.data_situacao || data.data_situacao_cadastral || 'Não informado'}</p>
+                </div>
+                <div class="info-item">
+                    <strong>Natureza Jurídica:</strong>
+                    <p>${naturezaJuridica}</p>
+                </div>
+                <div class="info-item">
+                    <strong>Porte:</strong>
+                    <p>${porte}</p>
+                </div>
+                <div class="info-item">
+                    <strong>CNAE Principal:</strong>
+                    <p>${cnae}</p>
+                </div>
+            </div>
+            <div class="info-card">
+                <h3>💰 Informações Econômicas</h3>
+                <div class="info-item">
+                    <strong>Capital Social:</strong>
+                    <p>R$ ${capitalSocial}</p>
+                </div>
+                <div class="info-item">
+                    <strong>Atividade Principal:</strong>
+                    <p>${atividadePrincipal}</p>
+                </div>
+                <div class="info-item">
+                    <strong>Atividades Secundárias:</strong>
+                    <div style="margin-left: 10px; margin-top: 5px;">
+                        ${atividadesHtml}
+                    </div>
+                </div>
+                <div class="info-item">
+                    <strong>Simples Nacional:</strong>
+                    <p>${data.simples?.optante === 'S' ? 'Sim' : (data.simples ? 'Não' : 'Não informado')}</p>
+                </div>
+                <div class="info-item">
+                    <strong>MEI:</strong>
+                    <p>${data.mei?.optante === 'S' ? 'Sim' : (data.mei ? 'Não' : 'Não informado')}</p>
+                </div>
+            </div>
+            <div class="info-card">
+                <h3>📍 Endereço</h3>
+                <div class="info-item">
+                    <strong>Logradouro:</strong>
+                    <p>${logradouro}, ${numero} ${complemento}</p>
+                </div>
+                <div class="info-item">
+                    <strong>Bairro:</strong>
+                    <p>${bairro}</p>
+                </div>
+                <div class="info-item">
+                    <strong>Cidade/UF:</strong>
+                    <p>${cidade} - ${estado}</p>
+                </div>
+                <div class="info-item">
+                    <strong>CEP:</strong>
+                    <p>${cep}</p>
+                </div>
+                <div class="info-item">
+                    <strong>Código Município:</strong>
+                    <p>${data.codigo_municipio || data.codigo_municipio_ibge || 'Não informado'}</p>
+                </div>
+                <div class="info-item">
+                    <strong>Código UF:</strong>
+                    <p>${data.codigo_uf || 'Não informado'}</p>
+                </div>
+            </div>
+            <div class="info-card">
+                <h3>📞 Contato</h3>
+                <div class="info-item">
+                    <strong>Telefone:</strong>
+                    <p>${formatarTelefone(telefone)}</p>
+                </div>
+                <div class="info-item">
+                    <strong>Telefone 2:</strong>
+                    <p>${data.telefone2 ? formatarTelefone(data.telefone2) : 'Não informado'}</p>
+                </div>
+                <div class="info-item">
+                    <strong>E-mail:</strong>
+                    <p>${email || 'Não informado'}</p>
+                </div>
+                <div class="info-item">
+                    <strong>E-mail 2:</strong>
+                    <p>${data.email2 || 'Não informado'}</p>
+                </div>
+            </div>
+            <div class="info-card">
+                <h3>📝 Informações Adicionais</h3>
+                <div class="info-item">
+                    <strong>Matriz/Filial:</strong>
+                    <p>${data.tipo || data.matriz_filial || 'Não informado'}</p>
+                </div>
+                <div class="info-item">
+                    <strong>Inscrições Estaduais:</strong>
+                    <p>${data.inscricoes_estaduais ? data.inscricoes_estaduais.join(', ') : 
+                       (data.inscricao_estadual || 'Não informado')}</p>
+                </div>
+                <div class="info-item">
+                    <strong>Inscrição Municipal:</strong>
+                    <p>${data.inscricao_municipal || 'Não informado'}</p>
+                </div>
+                <div class="info-item">
+                    <strong>Última Atualização:</strong>
+                    <p>${data.ultima_atualizacao || data.data_atualizacao || 'Não informado'}</p>
+                </div>
+            </div>
+            <div class="info-card" style="grid-column: 1/-1;">
+                <h3>👥 Quadro Societário</h3>
+                ${sociosHtml}
+            </div>
+        `;
+    }
+
+    companyInfo.innerHTML = html;
+}
+
+// Função para gerar PDF
+async function gerarPDF() {
+    if (!currentCompanyData) {
+        alert('Nenhum dado disponível para gerar PDF. Faça uma consulta primeiro.');
+        return;
+    }
+
+    try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        
+        // Configurações do PDF
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const margin = 20;
+        let yPos = 20;
+
+        // Título
+        doc.setFontSize(22);
+        doc.setTextColor(102, 126, 234);
+        doc.text('RELATÓRIO DE CONSULTA CNPJ', margin, yPos, { align: 'left' });
+        
+        yPos += 10;
+        doc.setDrawColor(102, 126, 234);
+        doc.line(margin, yPos, pageWidth - margin, yPos);
+        
+        yPos += 15;
+
+        // Data e hora da consulta
+        doc.setFontSize(10);
+        doc.setTextColor(100, 100, 100);
+        const dataConsulta = new Date().toLocaleString('pt-BR');
+        doc.text(`Data da consulta: ${dataConsulta}`, margin, yPos);
+        
+        yPos += 15;
+
+        // Informações da empresa
+        doc.setFontSize(14);
+        doc.setTextColor(0, 0, 0);
+        doc.setFont(undefined, 'bold');
+        doc.text('DADOS DA EMPRESA', margin, yPos);
+        doc.setFont(undefined, 'normal');
+        
+        yPos += 10;
+
+        // Extrair informações
+        const cnpj = formatarCNPJ(currentCompanyData.cnpj);
+        const razaoSocial = currentCompanyData.nome || currentCompanyData.razao_social || 'Não informado';
+        const nomeFantasia = currentCompanyData.fantasia || 'Não informado';
+        const dataAbertura = currentCompanyData.abertura || currentCompanyData.data_abertura || 'Não informado';
+        const situacao = currentCompanyData.situacao || 'Não informado';
+        const capitalSocial = currentCompanyData.capital_social || currentCompanyData.capital || '0,00';
+        const atividadePrincipal = currentCompanyData.atividade_principal || 
+                                  (currentCompanyData.atividade_principal && currentCompanyData.atividade_principal[0] ? 
+                                   currentCompanyData.atividade_principal[0].text : 'Não informado');
+
+        // Lista de informações
+        const informacoes = [
+            { label: 'CNPJ', value: cnpj },
+            { label: 'Razão Social', value: razaoSocial },
+            { label: 'Nome Fantasia', value: nomeFantasia },
+            { label: 'Data de Abertura', value: dataAbertura },
+            { label: 'Situação Cadastral', value: situacao },
+            { label: 'Capital Social', value: `R$ ${capitalSocial}` },
+            { label: 'Atividade Principal', value: atividadePrincipal }
+        ];
+
+        informacoes.forEach(info => {
+            if (yPos > 280) {
+                doc.addPage();
+                yPos = 20;
+            }
+            
+            doc.setFontSize(11);
+            doc.setFont(undefined, 'bold');
+            doc.text(`${info.label}:`, margin, yPos);
+            
+            doc.setFont(undefined, 'normal');
+            doc.text(info.value, margin + 40, yPos);
+            
+            yPos += 7;
+        });
+
+        yPos += 5;
+
+        // Endereço
+        const logradouro = currentCompanyData.logradouro || '';
+        const numero = currentCompanyData.numero || 'S/N';
+        const complemento = currentCompanyData.complemento || '';
+        const bairro = currentCompanyData.bairro || '';
+        const cidade = currentCompanyData.municipio || '';
+        const estado = currentCompanyData.uf || '';
+        const cep = formatarCEP(currentCompanyData.cep);
+
+        doc.setFont(undefined, 'bold');
+        doc.text('ENDEREÇO:', margin, yPos);
+        doc.setFont(undefined, 'normal');
+        yPos += 7;
+        
+        const endereco = `${logradouro}, ${numero} ${complemento}`;
+        doc.text(endereco, margin + 5, yPos);
+        yPos += 7;
+        doc.text(`${bairro}`, margin + 5, yPos);
+        yPos += 7;
+        doc.text(`${cidade} - ${estado}`, margin + 5, yPos);
+        yPos += 7;
+        doc.text(`CEP: ${cep}`, margin + 5, yPos);
+        
+        yPos += 10;
+
+        // Contato
+        const telefone = currentCompanyData.telefone || '';
+        const email = currentCompanyData.email || '';
+
+        doc.setFont(undefined, 'bold');
+        doc.text('CONTATO:', margin, yPos);
+        doc.setFont(undefined, 'normal');
+        yPos += 7;
+        doc.text(`Telefone: ${formatarTelefone(telefone)}`, margin + 5, yPos);
+        yPos += 7;
+        doc.text(`E-mail: ${email || 'Não informado'}`, margin + 5, yPos);
+
+        // Rodapé
+        yPos = 280;
+        doc.setFontSize(8);
+        doc.setTextColor(150, 150, 150);
+        doc.text('Documento gerado eletronicamente pelo Sistema de Consulta CNPJ', margin, yPos);
+        doc.text('Fonte: ReceitaWS - Dados públicos da Receita Federal', margin, yPos + 4);
+
+        // Salvar o PDF
+        doc.save(`consulta_cnpj_${currentCompanyData.cnpj.replace(/[^\d]/g, '')}.pdf`);
+        
+    } catch (error) {
+        console.error('Erro ao gerar PDF:', error);
+        alert('Erro ao gerar PDF. Tente novamente.');
+    }
+}
+
+// Função para exportar JSON
+function exportarJSON() {
+    if (!currentCompanyData) {
+        alert('Nenhum dado disponível para exportar. Faça uma consulta primeiro.');
+        return;
+    }
+
+    const dataStr = JSON.stringify(currentCompanyData, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    
+    const exportFileDefaultName = `cnpj_${currentCompanyData.cnpj.replace(/[^\d]/g, '')}.json`;
+    
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+}
+
+// Formatação do CNPJ enquanto digita
+document.getElementById('cnpjInput').addEventListener('input', function(e) {
+    let value = e.target.value.replace(/\D/g, '');
+    if (value.length <= 14) {
+        if (value.length > 2) {
+            value = value.replace(/^(\d{2})(\d)/, '$1.$2');
+        }
+        if (value.length > 6) {
+            value = value.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
+        }
+        if (value.length > 10) {
+            value = value.replace(/\.(\d{3})(\d)/, '.$1/$2');
+        }
+        if (value.length > 15) {
+            value = value.replace(/(\d{4})(\d)/, '$1-$2');
+        }
+        e.target.value = value;
+    }
+});
+
+// Permite consultar com Enter
+document.getElementById('cnpjInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        consultarCNPJ();
+    }
+});
+
+// Funções de filtro (simuladas)
+async function aplicarFiltroCidade() {
+    const cidade = document.getElementById('cidadeInput').value;
+    const estado = document.getElementById('estadoSelect').value;
+    
+    if (!cidade || !estado) {
+        alert('Por favor, preencha a cidade e selecione o estado');
+        return;
+    }
+    
+    mostrarLoading(`Buscando empresas em ${cidade}/${estado}...`);
+    
+    setTimeout(() => {
+        mostrarErro('Busca por cidade disponível apenas na versão premium da API');
+    }, 1500);
+}
+
+async function aplicarFiltroEstado() {
+    const estado = document.getElementById('estadoFiltroSelect').value;
+    
+    if (!estado) {
+        alert('Por favor, selecione um estado');
+        return;
+    }
+    
+    mostrarLoading(`Buscando empresas no estado ${estado}...`);
+    
+    setTimeout(() => {
+        mostrarErro('Busca por estado disponível apenas na versão premium da API');
+    }, 1500);
+}
+
+async function aplicarFiltroAtividade() {
+    const atividade = document.getElementById('atividadeInput').value;
+    
+    if (!atividade) {
+        alert('Por favor, digite uma atividade');
+        return;
+    }
+    
+    mostrarLoading(`Buscando empresas com atividade: ${atividade}...`);
+    
+    setTimeout(() => {
+        mostrarErro('Busca por atividade disponível apenas na versão premium da API');
+    }, 1500);
+}
+
+async function aplicarFiltroNome() {
+    const nome = document.getElementById('nomeInput').value;
+    
+    if (!nome) {
+        alert('Por favor, digite um nome');
+        return;
+    }
+    
+    mostrarLoading(`Buscando empresas com nome: ${nome}...`);
+    
+    setTimeout(() => {
+        mostrarErro('Busca por nome disponível apenas na versão premium da API');
+    }, 1500);
+}
